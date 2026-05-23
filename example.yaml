@@ -1,0 +1,125 @@
+esphome:
+  name: vl53l5cx
+  friendly_name: VL53L5CX
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "VL53L5CX Fallback Hotspot"
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+web_server:
+  version: 3
+  port: 80
+
+i2c:
+  - id: bus_a
+    sda: GPIO6
+    scl: GPIO7
+    frequency: 400kHz
+    scan: False
+
+vl53l5cx:
+  id: sensor_01
+  address: 0x29
+  i2c_id: bus_a
+  resolution: 8X8
+  ranging_frequency: 1Hz
+  ranging_mode: AUTO
+  target_order: STRONGEST
+  integration_time: 5ms
+  sharpening: 14%
+  run_xtalk_calibration: false
+  continuous_update: false
+  update_interval: 1s
+
+sensor:
+  - platform: vl53l5cx
+    vl53l5cx_id: sensor_01
+    name: single_distance
+    zone_mode: SINGLE
+    zone_data: DISTANCE
+    selected_zone: 4
+  - platform: vl53l5cx
+    name: average_sigma
+    zone_mode: AVERAGE
+    zone_data: SIGMA
+  - platform: vl53l5cx
+    name: nearest_reflectance
+    zone_mode: NEAREST
+    zone_data: REFLECTANCE
+  - platform: vl53l5cx
+    name: farthest_target_count
+    zone_mode: FARTHEST
+    zone_data: TARGET_COUNT
+  - platform: vl53l5cx
+    name: center_distance
+    zone_mode: CENTER
+
+text_sensor:
+  - platform: vl53l5cx
+    vl53l5cx_id: sensor_01
+    name: raw_distance
+    output_formatting: CSV
+    output_data: RAW_DISTANCE
+    flip_x: false
+    flip_y: false
+  - platform: vl53l5cx
+    name: float_distance
+    output_formatting: PNG
+    output_data: FLOAT_DISTANCE
+    flip_x: false
+    flip_y: false
+  - platform: vl53l5cx
+    name: raw_sigma
+    output_formatting: CSV
+    output_data: RAW_SIGMA
+    flip_x: false
+    flip_y: false
+  - platform: vl53l5cx
+    name: float_sigma
+    output_formatting: BINARY
+    output_data: FLOAT_SIGMA
+    flip_x: false
+    flip_y: false
+  - platform: vl53l5cx
+    name: reflectance
+    output_formatting: CSV
+    output_data: REFLECTANCE
+    flip_x: true
+    flip_y: true
+  - platform: vl53l5cx
+    name: target_count
+    output_formatting: CSV
+    output_data: TARGET_COUNT
+    flip_x: false
+    flip_y: false
+  - platform: vl53l5cx
+    name: status
+    output_formatting: TABLE
+    output_data: STATUS

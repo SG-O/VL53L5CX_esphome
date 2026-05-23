@@ -1,0 +1,117 @@
+esphome:
+  name: vl53l5cx_test_sensor_zones
+  friendly_name: VL53L5CX_Test_Sensor_Zones
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+logger:
+
+i2c:
+  - sda: GPIO6
+    scl: GPIO7
+
+vl53l5cx:
+  address: 0x29
+
+sensor:
+  # SINGLE zone_mode with all zone_data values
+  - platform: vl53l5cx
+    name: single_distance
+    zone_mode: SINGLE
+    zone_data: DISTANCE
+    selected_zone: 0
+  - platform: vl53l5cx
+    name: single_sigma
+    zone_mode: SINGLE
+    zone_data: SIGMA
+    selected_zone: 0
+  - platform: vl53l5cx
+    name: single_reflectance
+    zone_mode: SINGLE
+    zone_data: REFLECTANCE
+    selected_zone: 0
+  - platform: vl53l5cx
+    name: single_target_count
+    zone_mode: SINGLE
+    zone_data: TARGET_COUNT
+    selected_zone: 0
+
+  # AVERAGE zone_mode with all zone_data values
+  - platform: vl53l5cx
+    name: average_distance
+    zone_mode: AVERAGE
+    zone_data: DISTANCE
+  - platform: vl53l5cx
+    name: average_sigma
+    zone_mode: AVERAGE
+    zone_data: SIGMA
+  - platform: vl53l5cx
+    name: average_reflectance
+    zone_mode: AVERAGE
+    zone_data: REFLECTANCE
+  - platform: vl53l5cx
+    name: average_target_count
+    zone_mode: AVERAGE
+    zone_data: TARGET_COUNT
+
+  # NEAREST zone_mode with all zone_data values
+  - platform: vl53l5cx
+    name: nearest_distance
+    zone_mode: NEAREST
+    zone_data: DISTANCE
+  - platform: vl53l5cx
+    name: nearest_sigma
+    zone_mode: NEAREST
+    zone_data: SIGMA
+  - platform: vl53l5cx
+    name: nearest_reflectance
+    zone_mode: NEAREST
+    zone_data: REFLECTANCE
+  - platform: vl53l5cx
+    name: nearest_target_count
+    zone_mode: NEAREST
+    zone_data: TARGET_COUNT
+
+  # FARTHEST zone_mode with all zone_data values
+  - platform: vl53l5cx
+    name: farthest_distance
+    zone_mode: FARTHEST
+    zone_data: DISTANCE
+  - platform: vl53l5cx
+    name: farthest_sigma
+    zone_mode: FARTHEST
+    zone_data: SIGMA
+  - platform: vl53l5cx
+    name: farthest_reflectance
+    zone_mode: FARTHEST
+    zone_data: REFLECTANCE
+  - platform: vl53l5cx
+    name: farthest_target_count
+    zone_mode: FARTHEST
+    zone_data: TARGET_COUNT
+
+  # CENTER zone_mode with all zone_data values
+  - platform: vl53l5cx
+    name: center_distance
+    zone_mode: CENTER
+    zone_data: DISTANCE
+  - platform: vl53l5cx
+    name: center_sigma
+    zone_mode: CENTER
+    zone_data: SIGMA
+  - platform: vl53l5cx
+    name: center_reflectance
+    zone_mode: CENTER
+    zone_data: REFLECTANCE
+  - platform: vl53l5cx
+    name: center_target_count
+    zone_mode: CENTER
+    zone_data: TARGET_COUNT

@@ -1,0 +1,30 @@
+esphome:
+  name: vl53l5cx_test_default
+  friendly_name: VL53L5CX_Test_Default
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+logger:
+
+i2c:
+  - sda: GPIO6
+    scl: GPIO7
+
+vl53l5cx:
+  address: 0x29
+
+sensor:
+  - platform: vl53l5cx
+    name: single_distance
+
+text_sensor:
+  - platform: vl53l5cx
+    name: float_distance

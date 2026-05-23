@@ -1,0 +1,18 @@
+# This is the official list of project authors.
+# Names should be added as one of:
+#     Name <GitHub Username>
+#     Name <E-Mail Address>
+#     Organization Name <URL>
+
+# Individual contributors
+Joerg Bayer <SG-O>
+
+# Organization contributors
+
+# Authors of included components
+
+## STSW-IMG023 (Ultra Lite Driver (ULD) for VL53L5CX multi-zone sensor)
+STMicroelectronic <st.com>
+
+## uncompng.c
+The Wuffs Authors <github.com/google/wuffs/blob/main/AUTHORS>
