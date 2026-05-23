@@ -232,7 +232,7 @@ top-left from the sensor's perspective:
 ### 4×4 Resolution (16 zones)
 
 ```
-  0  1  2  3
+  0  1  2  3 <
   4  5  6  7
   8  9 10 11
  12 13 14 15
@@ -241,7 +241,7 @@ top-left from the sensor's perspective:
 ### 8×8 Resolution (64 zones)
 
 ```
-  0  1  2  3  4  5  6  7
+  0  1  2  3  4  5  6  7 <
   8  9 10 11 12 13 14 15
  16 17 18 19 20 21 22 23
  24 25 26 27 28 29 30 31
@@ -251,6 +251,8 @@ top-left from the sensor's perspective:
  56 57 58 59 60 61 62 63
 ```
 
+> **Note:** `<` Indicates the location of the marking on the sensor's package.
+
 ## License
 
 This component is licensed under the BSD 3-Clause License. See [LICENSE](LICENSE) for details.
@@ -258,3 +260,5 @@ This component is licensed under the BSD 3-Clause License. See [LICENSE](LICENSE
 The STMicroelectronics VL53L5CX Ultra Lite Driver (ULD) included in this component is provided under its own license.
 See [ST_ULD_LICENSE](components/vl53l5cx/ST_ULD_LICENSE) for details.
 
+The uncompng library created by the Wuffs Authors that is included in this component is provided under its own license.
+See [uncompng.c](components/vl53l5cx/text_sensor/uncompng.c) for details.
