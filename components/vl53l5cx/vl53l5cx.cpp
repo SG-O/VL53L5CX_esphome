@@ -106,14 +106,13 @@ void VL53L5CX::setup() {
   }
 
   uint8_t is_alive = false;
-  this->configuration_.platform.i2cDevice_ = this;
   if (this->lp_pin_ != nullptr) {
     ESP_LOGD(TAG, "Initializing I2C address.");
     // Pull the lp pin high (enable device)
     this->lp_pin_->digital_write(true);
     delayMicroseconds(100);
     this->hw_reset_();
-    status = vl53l5cx_is_alive(&this->configuration_, &is_alive);
+    status = this->api_.is_alive(&is_alive);
     if (!is_alive) {
       ESP_LOGD(TAG, "Switching device address to: 0x%02X", this->address_);
       // Use the default address to set the wanted address to use before
@@ -121,7 +120,7 @@ void VL53L5CX::setup() {
       const uint8_t final_address = this->address_;
       this->set_i2c_address(VL53L5CX_DEFAULT_I2C_ADDRESS >> 1);
 
-      status = vl53l5cx_set_i2c_address(&this->configuration_, final_address << 1);
+      status = this->api_.set_i2c_address(final_address << 1);
       if (status) {
         fail_("Failed to set I2C address: 0x%02X", status);
         return;
@@ -133,7 +132,7 @@ void VL53L5CX::setup() {
   }
 
   ESP_LOGD(TAG, "Checking connection.");
-  status = vl53l5cx_is_alive(&this->configuration_, &is_alive);
+  status = this->api_.is_alive(&is_alive);
   if (!is_alive) {
     fail_("Device not detected at requested address: 0x%02X", this->address_);
     return;
@@ -144,14 +143,14 @@ void VL53L5CX::setup() {
   }
 
   ESP_LOGD(TAG, "Initializing sensor.");
-  status = vl53l5cx_init(&this->configuration_);
+  status = this->api_.init();
   if (status) {
     fail_("ULD Loading failed: 0x%02X", status);
     return;
   }
 
   ESP_LOGD(TAG, "Checking readiness.");
-  status = vl53l5cx_check_data_ready(&this->configuration_, &this->is_ready_);
+  status = this->api_.check_data_ready(&this->is_ready_);
   if (status) {
     fail_("Failed to check readiness: 0x%02X", status);
     return;
@@ -159,14 +158,14 @@ void VL53L5CX::setup() {
 
 #if defined(RUN_XTALK_CALIBRATION)
   ESP_LOGD(TAG, "Calibrating xtalk.");
-  status = vl53l5cx_calibrate_xtalk(&this->configuration_, this->xtalk_calibration_reflectance_, 16,
-                                    this->xtalk_calibration_distance_);
+  status = this->api_.calibrate_xtalk(this->xtalk_calibration_reflectance_, 16,
+                                     this->xtalk_calibration_distance_);
   if (status) {
     fail_("Xtalk calibration failed: 0x%02X", status);
     return;
   }
 
-  status = vl53l5cx_get_caldata_xtalk(&this->configuration_, xtalk_buffer);
+  status = this->api_.get_caldata_xtalk(xtalk_buffer);
   if (status) {
     fail_("Getting xtalk calibration data failed: 0x%02X", status);
     return;
@@ -182,7 +181,7 @@ void VL53L5CX::setup() {
       fail_("Xtalk calibration data to short: 0x%02X", 255);
       return;
     }
-    status = vl53l5cx_set_caldata_xtalk(&this->configuration_, xtalk_buffer);
+    status = this->api_.set_caldata_xtalk(xtalk_buffer);
     if (status) {
       fail_("Setting xtalk calibration data failed: 0x%02X", status);
       return;
@@ -193,10 +192,10 @@ void VL53L5CX::setup() {
   ESP_LOGD(TAG, "Setting resolution.");
   if (this->resolution_ == VL53L5CX_4X4) {
     this->zones_ = 16;
-    status = vl53l5cx_set_resolution(&this->configuration_, VL53L5CX_RESOLUTION_4X4);
+    status = this->api_.set_resolution(VL53L5CX_RESOLUTION_4X4);
   } else if (this->resolution_ == VL53L5CX_8X8) {
     this->zones_ = 64;
-    status = vl53l5cx_set_resolution(&this->configuration_, VL53L5CX_RESOLUTION_8X8);
+    status = this->api_.set_resolution(VL53L5CX_RESOLUTION_8X8);
   } else {
     fail_("Invalid resolution: 0x%02X", this->resolution_);
     return;
@@ -207,7 +206,7 @@ void VL53L5CX::setup() {
   }
 
   ESP_LOGD(TAG, "Setting ranging frequency.");
-  status = vl53l5cx_set_ranging_frequency_hz(&this->configuration_, this->ranging_frequency_);
+  status = this->api_.set_ranging_frequency_hz(this->ranging_frequency_);
   if (status) {
     fail_("Failed to set ranging frequency: 0x%02X", status);
     return;
@@ -215,9 +214,9 @@ void VL53L5CX::setup() {
 
   ESP_LOGD(TAG, "Setting ranging mode.");
   if (this->ranging_mode_ == VL53L5CX_AUTO) {
-    status = vl53l5cx_set_ranging_mode(&this->configuration_, VL53L5CX_RANGING_MODE_AUTONOMOUS);
+    status = this->api_.set_ranging_mode(VL53L5CX_RANGING_MODE_AUTONOMOUS);
   } else if (this->ranging_mode_ == VL53L5CX_CONTINUOUS) {
-    status = vl53l5cx_set_ranging_mode(&this->configuration_, VL53L5CX_RANGING_MODE_CONTINUOUS);
+    status = this->api_.set_ranging_mode(VL53L5CX_RANGING_MODE_CONTINUOUS);
   } else {
     fail_("Invalid ranging mode: 0x%02X", this->ranging_mode_);
     return;
@@ -228,14 +227,14 @@ void VL53L5CX::setup() {
   }
 
   ESP_LOGD(TAG, "Setting integration time.");
-  status = vl53l5cx_set_integration_time_ms(&this->configuration_, this->integration_time_ / 1000);
+  status = this->api_.set_integration_time_ms(this->integration_time_ / 1000);
   if (status) {
     fail_("Failed to set integration time: 0x%02X", status);
     return;
   }
 
   ESP_LOGD(TAG, "Setting sharpening.");
-  status = vl53l5cx_set_sharpener_percent(&this->configuration_, this->sharpening_);
+  status = this->api_.set_sharpener_percent(this->sharpening_);
   if (status) {
     fail_("Failed to set sharpening percentage: 0x%02X", status);
     return;
@@ -243,9 +242,9 @@ void VL53L5CX::setup() {
 
   ESP_LOGD(TAG, "Setting target order.");
   if (this->target_order_ == VL53L5CX_STRONGEST) {
-    status = vl53l5cx_set_target_order(&this->configuration_, VL53L5CX_TARGET_ORDER_STRONGEST);
+    status = this->api_.set_target_order(VL53L5CX_TARGET_ORDER_STRONGEST);
   } else if (this->target_order_ == VL53L5CX_CLOSEST) {
-    status = vl53l5cx_set_target_order(&this->configuration_, VL53L5CX_TARGET_ORDER_CLOSEST);
+    status = this->api_.set_target_order(VL53L5CX_TARGET_ORDER_CLOSEST);
   } else {
     fail_("Invalid target order: 0x%02X", this->target_order_);
     return;
@@ -256,7 +255,7 @@ void VL53L5CX::setup() {
   }
 
   ESP_LOGD(TAG, "Setting temperature compensation.");
-  status = vl53l5cx_set_VHV_repeat_count(&this->configuration_, this->ranging_frequency_ * 60);
+  status = this->api_.set_vhv_repeat_count(this->ranging_frequency_ * 60);
   if (status) {
     fail_("Failed to set temperature compensation: 0x%02X", status);
     return;
@@ -297,7 +296,7 @@ void VL53L5CX::loop() {
         this->process_ranging_data_();
       }
     } else {
-      status = vl53l5cx_check_data_ready(&this->configuration_, &this->is_ready_);
+      status = this->api_.check_data_ready(&this->is_ready_);
       if (status) {
         ESP_LOGW(TAG, "Data readiness check failed: %x", status);
         this->stop_ranging();
@@ -312,13 +311,13 @@ void VL53L5CX::loop() {
 }
 
 void VL53L5CX::process_ranging_data_() {
-  status = vl53l5cx_get_ranging_data(&this->configuration_, &this->results_);
+  status = this->api_.get_ranging_data();
   if (status) {
     ESP_LOGW(TAG, "Failed to get ranging data: %x", status);
     return;
   }
   for (auto *sensor : this->sensors_) {
-    sensor->on_update(&this->results_, this->zones_);
+    sensor->on_update(this->api_.get_results(), this->zones_);
   }
   if (!this->continuous_update_) {
     this->stop_ranging();
@@ -337,12 +336,12 @@ void VL53L5CX::start_ranging() {
     this->lp_pin_->digital_write(true);
     delayMicroseconds(100);
   }
-  status = vl53l5cx_set_power_mode(&this->configuration_, VL53L5CX_POWER_MODE_WAKEUP);
+  status = this->api_.set_power_mode(VL53L5CX_POWER_MODE_WAKEUP);
   if (status) {
     ESP_LOGW(TAG, "Failed to set wake power mode: %x", status);
     return;
   }
-  status = vl53l5cx_start_ranging(&this->configuration_);
+  status = this->api_.start_ranging();
   if (status) {
     ESP_LOGW(TAG, "Failed to start ranging: %x", status);
     return;
@@ -356,12 +355,12 @@ void VL53L5CX::stop_ranging() {
     return;
   }
   this->initiated_read_ = false;
-  status = vl53l5cx_stop_ranging(&this->configuration_);
+  status = this->api_.stop_ranging();
   if (status) {
     ESP_LOGW(TAG, "Failed to stop ranging: %x", status);
     return;
   }
-  status = vl53l5cx_set_power_mode(&this->configuration_, VL53L5CX_POWER_MODE_SLEEP);
+  status = this->api_.set_power_mode(VL53L5CX_POWER_MODE_SLEEP);
   if (status) {
     ESP_LOGW(TAG, "Failed to set sleep power mode: %x", status);
     return;

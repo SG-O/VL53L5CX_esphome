@@ -7,7 +7,7 @@
 #include "esphome/core/hal.h"
 #include "esphome/components/i2c/i2c.h"
 #include "vl53l5cx_child.h"
-#include "vl53l5cx_api.h"
+#include "vl53l5cx_api_wrapper.h"
 
 namespace esphome::vl53l5cx {
 enum VL53L5CXResolution {
@@ -96,9 +96,8 @@ class VL53L5CX : public PollingComponent, public i2c::I2CDevice {
   bool initiated_read_{false};
   bool device_initiated_{false};
   uint8_t is_ready_{0};
-  VL53L5CX_Configuration configuration_{};
-  VL53L5CX_ResultsData results_{};
   uint8_t zones_{};
+  VL53L5CXApiWrapper api_{this};
 
   static std::list<VL53L5CX *> vl53_devices;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
   static bool lp_pin_setup_complete;      // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)

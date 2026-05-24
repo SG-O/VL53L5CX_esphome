@@ -27,12 +27,19 @@ namespace esphome::vl53l5cx {
 
 #define VL53L5CX_NB_BYTES_PER_I2C_OP 128
 
+typedef void* VL53L5CX_FUNC_REF;
+
 typedef struct {
-  /* To be filled with customer's platform. At least an I2C address/descriptor
+  /* To be fill with customer's platform. At least an I2C address/descriptor
    * needs to be added */
   /* Example for most standard platform : I2C address of sensor */
   uint16_t address_;
-  i2c::I2CDevice *i2cDevice_;
+  void* reference_;
+  uint8_t (*rd_byte_func)(VL53L5CX_FUNC_REF reference, const uint16_t register_address, uint8_t *p_value);
+  uint8_t (*wr_byte_func)(VL53L5CX_FUNC_REF reference, const uint16_t register_address, const uint8_t value);
+  uint8_t (*rd_bytes_func)(VL53L5CX_FUNC_REF reference, const uint16_t register_address, uint8_t *p_values, const uint32_t size);
+  uint8_t (*wr_bytes_func)(VL53L5CX_FUNC_REF reference, const uint16_t register_address, const uint8_t *p_values, const uint32_t size);
+  void (*delay_func)(uint32_t ms);
 } VL53L5CX_Platform;
 
 /*

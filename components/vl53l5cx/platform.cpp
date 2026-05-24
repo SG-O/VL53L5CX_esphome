@@ -16,59 +16,21 @@ namespace esphome::vl53l5cx {
 static const char *const TAG = "vl53l5cx_platform";
 
 uint8_t VL53L5CX_RdByte(const VL53L5CX_Platform *p_platform, const uint16_t RegisterAddress, uint8_t *p_value) {
-  const i2c::ErrorCode status = p_platform->i2cDevice_->read_register16(RegisterAddress, p_value, 1);
-  /* This function returns 0 if OK */
-  if (status) {
-    ESP_LOGD(TAG, "Failed to read: %x", status);
-  }
-  return static_cast<uint8_t>(status);
+  return p_platform->rd_byte_func(p_platform->reference_, RegisterAddress, p_value);
 }
 
 uint8_t VL53L5CX_WrByte(const VL53L5CX_Platform *p_platform, const uint16_t RegisterAddress, const uint8_t value) {
-  const i2c::ErrorCode status = p_platform->i2cDevice_->write_register16(RegisterAddress, &value, 1);
-  /* This function returns 0 if OK */
-  if (status) {
-    ESP_LOGD(TAG, "Failed to write: %x", status);
-  }
-  return static_cast<uint8_t>(status);
+  return p_platform->wr_byte_func(p_platform->reference_, RegisterAddress, value);
 }
 
 uint8_t VL53L5CX_WrMulti(const VL53L5CX_Platform *p_platform, const uint16_t RegisterAddress, const uint8_t *p_values,
                          const uint32_t size) {
-  uint32_t rest;
-  i2c::ErrorCode status;
-  for (uint32_t i = 0; i < size; i += VL53L5CX_NB_BYTES_PER_I2C_OP) {
-    rest = size - i;
-    if (rest > VL53L5CX_NB_BYTES_PER_I2C_OP)
-      rest = VL53L5CX_NB_BYTES_PER_I2C_OP;
-    status = p_platform->i2cDevice_->write_register16(RegisterAddress + i, p_values + i, rest);
-    /* This function returns 0 if OK */
-    if (status) {
-      ESP_LOGD(TAG, "Failed to write multiple: %x", status);
-      break;
-    }
-    arch_feed_wdt();
-  }
-  return static_cast<uint8_t>(status);
+  return p_platform->wr_bytes_func(p_platform->reference_, RegisterAddress, p_values, size);
 }
 
 uint8_t VL53L5CX_RdMulti(const VL53L5CX_Platform *p_platform, const uint16_t RegisterAddress, uint8_t *p_values,
                          const uint32_t size) {
-  uint32_t rest;
-  i2c::ErrorCode status;
-  for (uint32_t i = 0; i < size; i += VL53L5CX_NB_BYTES_PER_I2C_OP) {
-    rest = size - i;
-    if (rest > VL53L5CX_NB_BYTES_PER_I2C_OP)
-      rest = VL53L5CX_NB_BYTES_PER_I2C_OP;
-    status = p_platform->i2cDevice_->read_register16(RegisterAddress + i, p_values + i, rest);
-    /* This function returns 0 if OK */
-    if (status) {
-      ESP_LOGD(TAG, "Failed to read multiple: %x", status);
-      break;
-    }
-    arch_feed_wdt();
-  }
-  return static_cast<uint8_t>(status);
+  return p_platform->rd_bytes_func(p_platform->reference_, RegisterAddress, p_values, size);
 }
 
 uint8_t VL53L5CX_Reset_Sensor(VL53L5CX_Platform *p_platform) {
@@ -102,8 +64,7 @@ void VL53L5CX_SwapBuffer(uint8_t *buffer, const uint16_t size) {
 
 uint8_t VL53L5CX_WaitMs(VL53L5CX_Platform *p_platform, const uint32_t TimeMs) {
   /* This function returns 0 if OK */
-  delay(TimeMs);
-  arch_feed_wdt();
+  p_platform->delay_func(TimeMs);
   return 0;
 }
 }  // namespace esphome::vl53l5cx
