@@ -262,8 +262,5 @@ top-left from the sensor's perspective:
 
 This component is licensed under the BSD 3-Clause License. See [LICENSE](LICENSE) for details.
 
-The STMicroelectronics VL53L5CX Ultra Lite Driver (ULD) included in this component is provided under its own license.
-See [ST_ULD_LICENSE](components/vl53l5cx/ST_ULD_LICENSE) for details.
-
 The uncompng library created by the Wuffs Authors that is included in this component is provided under its own license.
 See [uncompng.c](components/vl53l5cx/text_sensor/uncompng.c) for details.

@@ -146,7 +146,7 @@ CONFIG_SCHEMA = cv.All(
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-
+    cg.add_library("VL53L5CX_ULD_API", "2.0.1", "https://github.com/SG-O/VL53L5CX_ULD_API.git")
     cg.add(var.set_resolution(config[CONF_RESOLUTION]))
     cg.add(var.set_ranging_frequency(config[CONF_RANGING_FREQUENCY]))
     cg.add(var.set_ranging_mode(config[CONF_RANGING_MODE]))
