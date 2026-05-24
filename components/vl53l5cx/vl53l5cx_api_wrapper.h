@@ -1,10 +1,13 @@
 #pragma once
 
 #include "vl53l5cx_api.h"
+#include "esphome/core/defines.h"  //NOLINT
 
 #if defined(RUN_XTALK_CALIBRATION) || defined(SET_XTALK_CALIBRATION_DATA)
 #include "vl53l5cx_plugin_xtalk.h"
 #endif
+
+#define VL53L5CX_NB_BYTES_PER_I2C_OP 128
 
 namespace esphome::vl53l5cx {
 
@@ -76,7 +79,7 @@ class VL53L5CXApiWrapper {
 #endif
 
  protected:
-  static uint8_t rd_byte_func(VL53L5CX_FUNC_REF reference, const uint16_t register_address, uint8_t *p_value) {
+  static uint8_t rd_byte_func(const VL53L5CX_FUNC_REF reference, const uint16_t register_address, uint8_t *p_value) {
     const auto *const wrapper = static_cast<VL53L5CXApiWrapper*>(reference);
     const i2c::ErrorCode status = wrapper->i2c_device_->read_register16(register_address, p_value, 1);
     /* This function returns 0 if OK */
@@ -86,7 +89,7 @@ class VL53L5CXApiWrapper {
     return static_cast<uint8_t>(status);
   }
 
-  static uint8_t wr_byte_func(VL53L5CX_FUNC_REF reference, const uint16_t register_address, const uint8_t value) {
+  static uint8_t wr_byte_func(const VL53L5CX_FUNC_REF reference, const uint16_t register_address, const uint8_t value) {
     const auto *const wrapper = static_cast<VL53L5CXApiWrapper*>(reference);
     const i2c::ErrorCode status = wrapper->i2c_device_->write_register16(register_address, &value, 1);
     /* This function returns 0 if OK */
@@ -96,7 +99,7 @@ class VL53L5CXApiWrapper {
     return static_cast<uint8_t>(status);
   }
 
-  static uint8_t rd_bytes_func(VL53L5CX_FUNC_REF reference, const uint16_t register_address, uint8_t *p_values, const uint32_t size) {
+  static uint8_t rd_bytes_func(const VL53L5CX_FUNC_REF reference, const uint16_t register_address, uint8_t *p_values, const uint32_t size) {
     const auto *const wrapper = static_cast<VL53L5CXApiWrapper*>(reference);
     uint32_t rest;
     i2c::ErrorCode status;
@@ -115,7 +118,7 @@ class VL53L5CXApiWrapper {
     return static_cast<uint8_t>(status);
   }
 
-  static uint8_t wr_bytes_func(VL53L5CX_FUNC_REF reference, const uint16_t register_address, const uint8_t *p_values, const uint32_t size) {
+  static uint8_t wr_bytes_func(const VL53L5CX_FUNC_REF reference, const uint16_t register_address, const uint8_t *p_values, const uint32_t size) {
     const auto *const wrapper = static_cast<VL53L5CXApiWrapper*>(reference);
     uint32_t rest;
     i2c::ErrorCode status;

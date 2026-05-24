@@ -13,7 +13,6 @@
 #include "platform.h"
 
 namespace esphome::vl53l5cx {
-static const char *const TAG = "vl53l5cx_platform";
 
 uint8_t VL53L5CX_RdByte(const VL53L5CX_Platform *p_platform, const uint16_t RegisterAddress, uint8_t *p_value) {
   return p_platform->rd_byte_func(p_platform->reference_, RegisterAddress, p_value);
