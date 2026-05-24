@@ -9,8 +9,8 @@ esp32:
 
 external_components:
   - source:
-      type: local
-      path: components
+      type: git
+      url: https://github.com/SG-O/VL53L5CX_esphome
 
 # Enable logging
 logger:
