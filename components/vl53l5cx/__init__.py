@@ -6,6 +6,7 @@ import base64
 from esphome.const import (
     CONF_ADDRESS,
     CONF_ID,
+    CONF_INTERRUPT_PIN,
     CONF_RESET_PIN,
     CONF_UPDATE_INTERVAL,
 )
@@ -133,8 +134,9 @@ CONFIG_SCHEMA = cv.All(
                 ),
             ),
             cv.Optional(CONF_XTALK_CALIBRATION_DATA): cv.string_strict,
-            cv.Optional(CONF_LP_PIN): pins.gpio_output_pin_schema,
             cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
+            cv.Optional(CONF_INTERRUPT_PIN): pins.internal_gpio_input_pin_schema,
+            cv.Optional(CONF_LP_PIN): pins.gpio_output_pin_schema,
         }
     ).extend(cv.polling_component_schema("60s")),
     check_keys,
@@ -159,12 +161,15 @@ async def to_code(config):
     if CONF_XTALK_CALIBRATION_DATA in config:
         cg.add_define("SET_XTALK_CALIBRATION_DATA")
         cg.add(var.set_xtalk_calibration_data(config[CONF_XTALK_CALIBRATION_DATA]))
-    if CONF_LP_PIN in config:
-        lp = await cg.gpio_pin_expression(config[CONF_LP_PIN])
-        cg.add(var.set_lp_pin(lp))
     if CONF_RESET_PIN in config:
         reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
         cg.add(var.set_reset_pin(reset))
+    if CONF_INTERRUPT_PIN in config:
+        int_pin = await cg.gpio_pin_expression(config[CONF_INTERRUPT_PIN])
+        cg.add(var.set_int_pin(int_pin))
+    if CONF_LP_PIN in config:
+        lp = await cg.gpio_pin_expression(config[CONF_LP_PIN])
+        cg.add(var.set_lp_pin(lp))
 
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)

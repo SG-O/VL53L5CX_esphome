@@ -49,6 +49,7 @@ vl53l5cx:
   address: 0x29
   i2c_id: bus_a
   reset_pin: GPIO2
+  interrupt_pin: GPIO3
   lp_pin: GPIO18
   resolution: 8X8
   ranging_frequency: 1Hz

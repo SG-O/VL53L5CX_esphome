@@ -15,9 +15,9 @@ static const auto TAG = "vl53l5cx";
 static uint8_t xtalk_buffer[VL53L5CX_XTALK_BUFFER_SIZE];
 #endif
 
-std::list<VL53L5CX *> VL53L5CX::vl53_devices; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-bool VL53L5CX::lp_pin_setup_complete = false; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-uint8_t status{255}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+std::list<VL53L5CX *> VL53L5CX::vl53_devices;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+bool VL53L5CX::lp_pin_setup_complete = false;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+uint8_t status{255};                           // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 VL53L5CX::VL53L5CX() {
   for (auto *device : vl53_devices) {
@@ -37,11 +37,14 @@ void VL53L5CX::dump_config() {
   }
   LOG_UPDATE_INTERVAL(this);
   LOG_I2C_DEVICE(this);
-  if (this->lp_pin_ != nullptr) {
-    LOG_PIN("  LP Pin: ", this->lp_pin_);
-  }
   if (this->reset_pin_ != nullptr) {
     LOG_PIN("  Reset Pin: ", this->reset_pin_);
+  }
+  if (this->int_pin_ != nullptr) {
+    LOG_PIN("  Interrupt Pin: ", this->int_pin_);
+  }
+  if (this->lp_pin_ != nullptr) {
+    LOG_PIN("  LP Pin: ", this->lp_pin_);
   }
   switch (this->resolution_) {
     case VL53L5CX_4X4:
@@ -91,11 +94,12 @@ void VL53L5CX::dump_config() {
 }
 
 void VL53L5CX::setup() {
-  if (this->is_failed()) return;
+  if (this->is_failed())
+    return;
   if (!lp_pin_setup_complete) {
     delay(10);
     ESP_LOGD(TAG, "Preparing pins.");
-    for (auto &vl53_device : vl53_devices) {
+    for (const auto &vl53_device : vl53_devices) {
       vl53_device->setup_pins_();
     }
     lp_pin_setup_complete = true;
@@ -172,8 +176,8 @@ void VL53L5CX::setup() {
   if (this->xtalk_calibration_data_ != nullptr) {
     ESP_LOGD(TAG, "Writing xtalk config.");
     size_t data_length = strlen(this->xtalk_calibration_data_);
-    size_t decoded =
-        base64_decode(reinterpret_cast<const uint8_t*>(this->xtalk_calibration_data_), data_length, xtalk_buffer, VL53L5CX_XTALK_BUFFER_SIZE);
+    size_t decoded = base64_decode(reinterpret_cast<const uint8_t *>(this->xtalk_calibration_data_), data_length,
+                                   xtalk_buffer, VL53L5CX_XTALK_BUFFER_SIZE);
     if (decoded < VL53L5CX_XTALK_BUFFER_SIZE) {
       fail_("Xtalk calibration data to short: 0x%02X", 255);
       return;
@@ -261,7 +265,7 @@ void VL53L5CX::setup() {
   this->device_initiated_ = true;
   ESP_LOGD(TAG, "Force stopping ranging.");
   this->start_ranging();
-  this->stop_ranging(); //Workaround to prevent vl53l5cx_check_data_ready returning 0x85
+  this->stop_ranging();  // Workaround to prevent vl53l5cx_check_data_ready returning 0x85
 
   // Check if all sensors have been initialized and start continuous update for those that need it
   if (VL53L5CX::all_sensors_initialized()) {
@@ -287,27 +291,37 @@ void VL53L5CX::loop() {
     return;
   }
   if (this->initiated_read_) {
-    status = vl53l5cx_check_data_ready(&this->configuration_, &this->is_ready_);
-    if (status) {
-      ESP_LOGW(TAG, "Data readiness check failed: %x", status);
-      this->stop_ranging();
-      this->start_ranging();
-      return;
-    }
-    if (this->is_ready_) {
-      status = vl53l5cx_get_ranging_data(&this->configuration_, &this->results_);
+    if (this->int_pin_ != nullptr) {
+      if (this->interrupt_triggered_) {
+        this->interrupt_triggered_ = false;
+        this->process_ranging_data_();
+      }
+    } else {
+      status = vl53l5cx_check_data_ready(&this->configuration_, &this->is_ready_);
       if (status) {
-        ESP_LOGW(TAG, "Failed to get ranging data: %x", status);
-
+        ESP_LOGW(TAG, "Data readiness check failed: %x", status);
+        this->stop_ranging();
+        this->start_ranging();
         return;
       }
-      for (auto *sensor : this->sensors_) {
-        sensor->on_update(&this->results_, this->zones_);
-      }
-      if (!this->continuous_update_) {
-        this->stop_ranging();
+      if (this->is_ready_) {
+        this->process_ranging_data_();
       }
     }
+  }
+}
+
+void VL53L5CX::process_ranging_data_() {
+  status = vl53l5cx_get_ranging_data(&this->configuration_, &this->results_);
+  if (status) {
+    ESP_LOGW(TAG, "Failed to get ranging data: %x", status);
+    return;
+  }
+  for (auto *sensor : this->sensors_) {
+    sensor->on_update(&this->results_, this->zones_);
+  }
+  if (!this->continuous_update_) {
+    this->stop_ranging();
   }
 }
 
@@ -381,17 +395,25 @@ void VL53L5CX::hw_reset_() const {
   }
 }
 
-void VL53L5CX::setup_pins_() const {
-  if (this->lp_pin_ != nullptr) {
-    // Init lp pins and power down device
-    this->lp_pin_->setup();
-    this->lp_pin_->digital_write(false);
-  }
+void VL53L5CX::setup_pins_() {
   if (this->reset_pin_ != nullptr) {
     // Init reset pins
     this->reset_pin_->setup();
     this->reset_pin_->digital_write(false);
   }
+  if (this->int_pin_ != nullptr) {
+    this->int_pin_->setup();
+    this->int_pin_->attach_interrupt(VL53L5CX::intr_handle_, this, gpio::INTERRUPT_FALLING_EDGE);
+  }
+  if (this->lp_pin_ != nullptr) {
+    // Init lp pins and power down device
+    this->lp_pin_->setup();
+    this->lp_pin_->digital_write(false);
+  }
+}
+
+void VL53L5CX::intr_handle_(VL53L5CX *arg) {
+  arg->interrupt_triggered_ = true;
 }
 
 void VL53L5CX::fail_(const char *message, const uint8_t data) {

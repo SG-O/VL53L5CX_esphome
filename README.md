@@ -65,6 +65,7 @@ vl53l5cx:
   address: 0x29
   i2c_id: bus_a
   reset_pin: GPIO2
+  interrupt_pin: GPIO3
   lp_pin: GPIO18
   resolution: 8X8
   ranging_frequency: 1Hz
@@ -84,6 +85,7 @@ vl53l5cx:
 | **`address`**                       | int        | `0x29`      | I²C address (7-bit). Default is `0x29`. If changed, `lp_pin` must be defined.                                                                                                                                                                            |
 | **`i2c_id`**                        | ID         | -           | ID of the I²C bus component.                                                                                                                                                                                                                             |
 | **`reset_pin`**                     | GPIO pin   | -           | Reset output pin (active high). Used to reset the sensor's I²C buffer. Does not reset the sensor itself. Usually not needed.                                                                                                                             |
+| **`interrupt_pin`**                 | GPIO pin   | -           | Interrupt input pin (active low). The sensor drives this pin low when new data is available.                                                                                                                                                             |
 | **`lp_pin`**                        | GPIO pin   | -           | LPn (low power) output pin. **Required** when using an I²C address other than `0x29`.                                                                                                                                                                    |
 | **`resolution`**                    | enum       | `8X8`       | Zone resolution: `4X4` (16 zones) or `8X8` (64 zones).                                                                                                                                                                                                   |
 | **`ranging_frequency`**             | frequency  | `1Hz`       | Ranging frequency. Max 60 Hz for 4×4, 15 Hz for 8×8.                                                                                                                                                                                                     |
