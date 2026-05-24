@@ -72,6 +72,7 @@ vl53l5cx:
   sharpening: 14%
   continuous_update: false
   update_interval: 60s
+  lp_pin: GPIO18
 ```
 
 #### Configuration Variables

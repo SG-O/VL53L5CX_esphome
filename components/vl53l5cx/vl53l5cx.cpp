@@ -88,8 +88,9 @@ void VL53L5CX::dump_config() {
 }
 
 void VL53L5CX::setup() {
+  delay(100);
   if (this->is_failed()) return;
-  if (!esphome::vl53l5cx::VL53L5CX::lp_pin_setup_complete) {
+  if (!lp_pin_setup_complete) {
     ESP_LOGD(TAG, "Preparing lp pins.");
     for (auto &vl53_device : vl53_devices) {
       if (vl53_device->lp_pin_ != nullptr) {
@@ -98,37 +99,41 @@ void VL53L5CX::setup() {
         vl53_device->lp_pin_->digital_write(false);
       }
     }
-    esphome::vl53l5cx::VL53L5CX::lp_pin_setup_complete = true;
+    lp_pin_setup_complete = true;
   }
-
+  uint8_t is_alive = false;
   this->configuration_.platform.i2cDevice_ = this;
   if (this->lp_pin_ != nullptr) {
     ESP_LOGD(TAG, "Initializing I2C address.");
     // Pull the lp pin high (enable device)
     this->lp_pin_->digital_write(true);
     delayMicroseconds(100);
-    // Use the default address to set the wanted address to use before
-    // switching back.
-    uint8_t final_address = address_;
-    this->set_i2c_address(VL53L5CX_DEFAULT_I2C_ADDRESS >> 1);
+    status = vl53l5cx_is_alive(&this->configuration_, &is_alive);
+    if (!is_alive) {
+      ESP_LOGD(TAG, "Switching device address to: 0x%02X", this->address_);
+      // Use the default address to set the wanted address to use before
+      // switching back.
+      const uint8_t final_address = this->address_;
+      this->set_i2c_address(VL53L5CX_DEFAULT_I2C_ADDRESS >> 1);
 
-    status = vl53l5cx_set_i2c_address(&this->configuration_, final_address & 0x7F);
-    if (status) {
-      fail_("Failed to set I2C address: 0x%02X", status);
-      return;
+      status = vl53l5cx_set_i2c_address(&this->configuration_, final_address << 1);
+      if (status) {
+        fail_("Failed to set I2C address: 0x%02X", status);
+        return;
+      }
+      this->set_i2c_address(final_address);
     }
-    this->set_i2c_address(final_address);
+
   }
 
   ESP_LOGD(TAG, "Checking connection.");
-  uint8_t is_alive;
   status = vl53l5cx_is_alive(&this->configuration_, &is_alive);
   if (!is_alive) {
     fail_("Device not detected at requested address: 0x%02X", this->address_);
     return;
   }
   if (status) {
-    fail_("Device not detection failed: 0x%02X", status);
+    fail_("Device detection failed: 0x%02X", status);
     return;
   }
 
@@ -255,11 +260,6 @@ void VL53L5CX::setup() {
   ESP_LOGD(TAG, "Force stopping ranging.");
   this->start_ranging();
   this->stop_ranging(); //Workaround to prevent vl53l5cx_check_data_ready returning 0x85
-  if (this->lp_pin_ != nullptr) {
-    // Pull the lp pin low to not interfere with other sensors' setup
-    this->lp_pin_->digital_write(false);
-    delayMicroseconds(100);
-  }
 
   // Check if all sensors have been initialized and start continuous update for those that need it
   if (VL53L5CX::all_sensors_initialized()) {
@@ -321,6 +321,11 @@ void VL53L5CX::start_ranging() {
     this->lp_pin_->digital_write(true);
     delayMicroseconds(100);
   }
+  status = vl53l5cx_set_power_mode(&this->configuration_, VL53L5CX_POWER_MODE_WAKEUP);
+  if (status) {
+    ESP_LOGW(TAG, "Failed to set wake power mode: %x", status);
+    return;
+  }
   status = vl53l5cx_start_ranging(&this->configuration_);
   if (status) {
     ESP_LOGW(TAG, "Failed to start ranging: %x", status);
@@ -338,6 +343,11 @@ void VL53L5CX::stop_ranging() {
   status = vl53l5cx_stop_ranging(&this->configuration_);
   if (status) {
     ESP_LOGW(TAG, "Failed to stop ranging: %x", status);
+    return;
+  }
+  status = vl53l5cx_set_power_mode(&this->configuration_, VL53L5CX_POWER_MODE_SLEEP);
+  if (status) {
+    ESP_LOGW(TAG, "Failed to set sleep power mode: %x", status);
     return;
   }
   if (this->lp_pin_ != nullptr) {

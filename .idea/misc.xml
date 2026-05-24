@@ -7,4 +7,13 @@
     <option name="pythonIntegrationState" value="YES" />
   </component>
   <component name="CMakeWorkspace" PROJECT_DIR="$PROJECT_DIR$" />
+  <component name="CidrRootsConfiguration">
+    <sourceRoots>
+      <file path="$PROJECT_DIR$/.venv/lib/python3.13/site-packages/esphome" />
+      <file path="$PROJECT_DIR$/components" />
+    </sourceRoots>
+    <excludeRoots>
+      <file path="$PROJECT_DIR$/.esphome" />
+    </excludeRoots>
+  </component>
 </project>
