@@ -70,12 +70,12 @@ class VL53L5CXApiWrapper {
 
 #if defined(RUN_XTALK_CALIBRATION) || defined(SET_XTALK_CALIBRATION_DATA)
   uint8_t calibrate_xtalk(uint16_t reflectance_percent, uint8_t nb_samples, uint16_t distance_mm) {
-    return vl53l5cx_calibrate_xtalk(this->config_, reflectance_percent, nb_samples, distance_mm);
+    return vl53l5cx_calibrate_xtalk(&this->config_, reflectance_percent, nb_samples, distance_mm);
   }
 
-  uint8_t get_caldata_xtalk(uint8_t *p_xtalk_data) { return vl53l5cx_get_caldata_xtalk(this->config_, p_xtalk_data); }
+  uint8_t get_caldata_xtalk(uint8_t *p_xtalk_data) { return vl53l5cx_get_caldata_xtalk(&this->config_, p_xtalk_data); }
 
-  uint8_t set_caldata_xtalk(uint8_t *p_xtalk_data) { return vl53l5cx_set_caldata_xtalk(this->config_, p_xtalk_data); }
+  uint8_t set_caldata_xtalk(uint8_t *p_xtalk_data) { return vl53l5cx_set_caldata_xtalk(&this->config_, p_xtalk_data); }
 #endif
 
  protected:
