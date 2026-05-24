@@ -33,7 +33,7 @@ typedef struct {
   uint8_t (*rd_byte_func)(VL53L5CX_FUNC_REF reference, uint16_t register_address, uint8_t *p_value);
   uint8_t (*wr_byte_func)(VL53L5CX_FUNC_REF reference, uint16_t register_address, uint8_t value);
   uint8_t (*rd_bytes_func)(VL53L5CX_FUNC_REF reference, uint16_t register_address, uint8_t *p_values, uint32_t size);
-  uint8_t (*wr_bytes_func)(VL53L5CX_FUNC_REF reference, uint16_t register_address, uint8_t *p_values, uint32_t size);
+  uint8_t (*wr_bytes_func)(VL53L5CX_FUNC_REF reference, uint16_t register_address, const uint8_t *p_values, uint32_t size);
   void (*delay_func)(uint32_t ms);
 } VL53L5CX_Platform;
 
