@@ -61,12 +61,15 @@ class VL53L5CX : public PollingComponent, public i2c::I2CDevice {
   }
 #endif
   void set_lp_pin(GPIOPin *lp) { this->lp_pin_ = lp; }
+  void set_reset_pin(GPIOPin *reset) { this->reset_pin_ = reset; }
 
   void register_sensor(VL53L5CXChild *obj) { this->sensors_.push_back(obj); }
 
   static bool all_sensors_initialized();
 
   protected:
+  void setup_pins_() const;
+  void hw_reset_() const;
   void fail_(const char *message, uint8_t data);
 
   VL53L5CXResolution resolution_{VL53L5CX_8X8};
@@ -84,6 +87,7 @@ class VL53L5CX : public PollingComponent, public i2c::I2CDevice {
   const char *xtalk_calibration_data_{nullptr};
 #endif
   GPIOPin *lp_pin_{nullptr};
+  GPIOPin *reset_pin_{nullptr};
   bool initiated_read_{false};
   bool device_initiated_{false};
   uint8_t is_ready_{0};

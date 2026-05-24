@@ -64,6 +64,8 @@ vl53l5cx:
   id: sensor_01
   address: 0x29
   i2c_id: bus_a
+  reset_pin: GPIO2
+  lp_pin: GPIO18
   resolution: 8X8
   ranging_frequency: 1Hz
   ranging_mode: AUTO
@@ -72,7 +74,6 @@ vl53l5cx:
   sharpening: 14%
   continuous_update: false
   update_interval: 60s
-  lp_pin: GPIO18
 ```
 
 #### Configuration Variables
@@ -82,6 +83,8 @@ vl53l5cx:
 | **`id`**                            | ID         | -           | Unique ID for this sensor hub.                                                                                                                                                                                                                           |
 | **`address`**                       | int        | `0x29`      | I²C address (7-bit). Default is `0x29`. If changed, `lp_pin` must be defined.                                                                                                                                                                            |
 | **`i2c_id`**                        | ID         | -           | ID of the I²C bus component.                                                                                                                                                                                                                             |
+| **`reset_pin`**                     | GPIO pin   | -           | Reset output pin (active high). Used to reset the sensor's I²C buffer. Does not reset the sensor itself. Usually not needed.                                                                                                                             |
+| **`lp_pin`**                        | GPIO pin   | -           | LPn (low power) output pin. **Required** when using an I²C address other than `0x29`.                                                                                                                                                                    |
 | **`resolution`**                    | enum       | `8X8`       | Zone resolution: `4X4` (16 zones) or `8X8` (64 zones).                                                                                                                                                                                                   |
 | **`ranging_frequency`**             | frequency  | `1Hz`       | Ranging frequency. Max 60 Hz for 4×4, 15 Hz for 8×8.                                                                                                                                                                                                     |
 | **`ranging_mode`**                  | enum       | `AUTO`      | Ranging mode: `CONTINUOUS` (high performance) or `AUTO` (autonomous, low power).                                                                                                                                                                         |
@@ -94,7 +97,6 @@ vl53l5cx:
 | **`xtalk_calibration_reflectance`** | percentage | `3%`        | Target reflectance for Xtalk calibration (1–99%).                                                                                                                                                                                                        |
 | **`xtalk_calibration_distance`**    | distance   | `600mm`     | Target distance for Xtalk calibration (0.6 m – 3.0 m).                                                                                                                                                                                                   |
 | **`xtalk_calibration_data`**        | string     | -           | Base64 encoded pre-calibrated Xtalk data string. Cannot be used with `run_xtalk_calibration`.                                                                                                                                                            |
-| **`lp_pin`**                        | GPIO pin   | -           | LPn (low power) output pin. **Required** when using an I²C address other than `0x29`.                                                                                                                                                                    |
 
 > **Note:** This component supports multiple sensors on the same I²C bus. When using multiple sensors with different
 > addresses, each requires the definition of the `lp_pin` to control the address programming sequence.
@@ -158,13 +160,13 @@ text_sensor:
 
 #### Configuration Variables
 
-| Key                    | Type | Default          | Description                                      |
-|------------------------|------|------------------|--------------------------------------------------|
-| **`vl53l5cx_id`**      | ID   | -                | ID of the parent VL53L5CX hub.                   |
+| Key                     | Type | Default          | Description                                      |
+|-------------------------|------|------------------|--------------------------------------------------|
+| **`vl53l5cx_id`**       | ID   | -                | ID of the parent VL53L5CX hub.                   |
 | **`output_formatting`** | enum | `CSV`            | Output format. See **Output Formats** below.     |
-| **`output_data`**      | enum | `FLOAT_DISTANCE` | Which data to output. See **Output Data** below. |
-| **`flip_x`**           | bool | `false`          | Flip the output horizontally.                    |
-| **`flip_y`**           | bool | `false`          | Flip the output vertically.                      |
+| **`output_data`**       | enum | `FLOAT_DISTANCE` | Which data to output. See **Output Data** below. |
+| **`flip_x`**            | bool | `false`          | Flip the output horizontally.                    |
+| **`flip_y`**            | bool | `false`          | Flip the output vertically.                      |
 
 #### Output Formats
 

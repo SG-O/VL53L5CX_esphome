@@ -40,6 +40,9 @@ void VL53L5CX::dump_config() {
   if (this->lp_pin_ != nullptr) {
     LOG_PIN("  LP Pin: ", this->lp_pin_);
   }
+  if (this->reset_pin_ != nullptr) {
+    LOG_PIN("  Reset Pin: ", this->reset_pin_);
+  }
   switch (this->resolution_) {
     case VL53L5CX_4X4:
       ESP_LOGCONFIG(TAG, "  Resolution: 4X4");
@@ -88,19 +91,16 @@ void VL53L5CX::dump_config() {
 }
 
 void VL53L5CX::setup() {
-  delay(100);
   if (this->is_failed()) return;
   if (!lp_pin_setup_complete) {
-    ESP_LOGD(TAG, "Preparing lp pins.");
+    delay(10);
+    ESP_LOGD(TAG, "Preparing pins.");
     for (auto &vl53_device : vl53_devices) {
-      if (vl53_device->lp_pin_ != nullptr) {
-        // Power down all devices
-        vl53_device->lp_pin_->setup();
-        vl53_device->lp_pin_->digital_write(false);
-      }
+      vl53_device->setup_pins_();
     }
     lp_pin_setup_complete = true;
   }
+
   uint8_t is_alive = false;
   this->configuration_.platform.i2cDevice_ = this;
   if (this->lp_pin_ != nullptr) {
@@ -108,6 +108,7 @@ void VL53L5CX::setup() {
     // Pull the lp pin high (enable device)
     this->lp_pin_->digital_write(true);
     delayMicroseconds(100);
+    this->hw_reset_();
     status = vl53l5cx_is_alive(&this->configuration_, &is_alive);
     if (!is_alive) {
       ESP_LOGD(TAG, "Switching device address to: 0x%02X", this->address_);
@@ -123,7 +124,8 @@ void VL53L5CX::setup() {
       }
       this->set_i2c_address(final_address);
     }
-
+  } else {
+    this->hw_reset_();
   }
 
   ESP_LOGD(TAG, "Checking connection.");
@@ -367,6 +369,29 @@ bool VL53L5CX::all_sensors_initialized() {
     }
   }
   return true;
+}
+
+void VL53L5CX::hw_reset_() const {
+  if (this->reset_pin_ != nullptr) {
+    ESP_LOGD(TAG, "Performing hardware reset.");
+    this->reset_pin_->digital_write(true);
+    delay(10);
+    this->reset_pin_->digital_write(false);
+    delay(10);
+  }
+}
+
+void VL53L5CX::setup_pins_() const {
+  if (this->lp_pin_ != nullptr) {
+    // Init lp pins and power down device
+    this->lp_pin_->setup();
+    this->lp_pin_->digital_write(false);
+  }
+  if (this->reset_pin_ != nullptr) {
+    // Init reset pins
+    this->reset_pin_->setup();
+    this->reset_pin_->digital_write(false);
+  }
 }
 
 void VL53L5CX::fail_(const char *message, const uint8_t data) {

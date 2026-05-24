@@ -6,6 +6,7 @@ import base64
 from esphome.const import (
     CONF_ADDRESS,
     CONF_ID,
+    CONF_RESET_PIN,
     CONF_UPDATE_INTERVAL,
 )
 
@@ -133,6 +134,7 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_XTALK_CALIBRATION_DATA): cv.string_strict,
             cv.Optional(CONF_LP_PIN): pins.gpio_output_pin_schema,
+            cv.Optional(CONF_RESET_PIN): pins.gpio_output_pin_schema,
         }
     ).extend(cv.polling_component_schema("60s")),
     check_keys,
@@ -160,6 +162,9 @@ async def to_code(config):
     if CONF_LP_PIN in config:
         lp = await cg.gpio_pin_expression(config[CONF_LP_PIN])
         cg.add(var.set_lp_pin(lp))
+    if CONF_RESET_PIN in config:
+        reset = await cg.gpio_pin_expression(config[CONF_RESET_PIN])
+        cg.add(var.set_reset_pin(reset))
 
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
