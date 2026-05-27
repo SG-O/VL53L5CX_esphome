@@ -1,0 +1,61 @@
+esphome:
+  name: vl53l_mz_test_multi
+  friendly_name: VL53L_MZ_Test_Multi
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+logger:
+
+i2c:
+  - id: bus_a
+    sda: GPIO6
+    scl: GPIO7
+
+vl53l_mz:
+  - id: sensor_01
+    model: VL53L8CX
+    address: 0x29
+    i2c_id: bus_a
+    lp_pin: GPIO1
+    resolution: 4X4
+    ranging_frequency: 30Hz
+    ranging_mode: CONTINUOUS
+    continuous_update: true
+
+  - id: sensor_02
+    model: VL53L8CX
+    address: 0x2A
+    i2c_id: bus_a
+    lp_pin: GPIO2
+    resolution: 4X4
+    ranging_frequency: 30Hz
+    ranging_mode: CONTINUOUS
+    continuous_update: true
+
+sensor:
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_01
+    name: sensor01_distance
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_02
+    name: sensor02_distance
+
+text_sensor:
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_01
+    name: sensor01_csv
+    output_formatting: CSV
+    output_data: FLOAT_DISTANCE
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_02
+    name: sensor02_csv
+    output_formatting: CSV
+    output_data: FLOAT_DISTANCE

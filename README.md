@@ -2,10 +2,15 @@
 
 Custom ESPHome component for STMicroelectronics multizone Time-of-Flight (ToF) ranging sensors.
 
-Supports the VL53L5CX and VL53L8CX.
+Supports the following STMicroelectronics multizone Time-of-Flight (ToF) sensors:
+
+- **VL53L5CX** — 65° diagonal FoV, up to 4 m range
+- **VL53L7CX** — 90° diagonal FoV, up to 3.5 m range
+- **VL53L8CX** — 65° diagonal FoV, up to 4 m range, 2nd generation, lower power than VL53L5CX
 
 > **⚠️ Disclaimer:** This software is **experimental**. It has only been tested on the **ESP32-C6** using the **ESP-IDF**
 > framework. The following features are **untested**:
+> - VL53L7CX support
 > - VL53L8CX support
 > - Multiple sensors on the same I²C bus
 > - Crosstalk (Xtalk) calibration (both running calibration and applying pre-calibrated data)
@@ -44,7 +49,7 @@ For a remote installation from GitHub:
 external_components:
   - source:
       type: git
-      url: https://github.com/SG-O/VL53L5CX_esphome
+      url: https://github.com/SG-O/VL53L_MZ_esphome
 ```
 
 ## Example
@@ -81,7 +86,7 @@ vl53l_mz:
 | Key                                 | Type       | Default     | Description                                                                                                                                                                                                                                              |
 |-------------------------------------|------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **`id`**                            | ID         | -           | Unique ID for this sensor hub.                                                                                                                                                                                                                           |
-| **`model`**                         | enum       | -           | **Required.** Sensor model: `VL53L5CX` or `VL53L8CX`.                                                                                                                                                                                                   |
+| **`model`**                         | enum       | -           | **Required.** Sensor model. See **Sensor Models** below.                                                                                                                                                                                                 |
 | **`address`**                       | int        | `0x29`      | I²C address (7-bit). Default is `0x29`. If changed, `lp_pin` must be defined.                                                                                                                                                                            |
 | **`i2c_id`**                        | ID         | -           | ID of the I²C bus component.                                                                                                                                                                                                                             |
 | **`reset_pin`**                     | GPIO pin   | -           | Reset output pin (active high). Used to reset the sensor's I²C buffer. Does not reset the sensor itself. Usually not needed.                                                                                                                             |
@@ -102,6 +107,14 @@ vl53l_mz:
 
 > **Note:** This component supports multiple sensors on the same I²C bus. When using multiple sensors with different
 > addresses, each requires the definition of the `lp_pin` to control the address programming sequence.
+
+#### Sensor Models
+
+| Model      | FoV                    | Max Range |
+|------------|------------------------|-----------|
+| `VL53L5CX` | 65° diagonal (45°×45°) | 4 m       |
+| `VL53L7CX` | 90° diagonal (60°×60°) | 3.5 m     |
+| `VL53L8CX` | 65° diagonal (45°×45°) | 4 m       |
 
 ### Numeric Sensor (`sensor`)
 
@@ -213,12 +226,14 @@ brings them high one by one to bring each sensor online, and program the new add
 ```yaml
 vl53l_mz:
   - id: sensor_01
+    model: VL53L5CX
     address: 0x29
     i2c_id: bus_a
     lp_pin: GPIO1
     resolution: 4X4
     ranging_frequency: 30Hz
   - id: sensor_02
+    model: VL53L5CX
     address: 0x2A
     i2c_id: bus_a
     lp_pin: GPIO2
@@ -228,6 +243,8 @@ vl53l_mz:
 
 > **Important:** When using multiple sensors, every one (including the one at the default address) must define a
 `lp_pin`.
+
+> **Note:** Different sensor models (e.g., VL53L5CX, VL53L7CX, VL53L8CX) can be mixed on the same I²C bus.
 
 ## Zone Layout
 

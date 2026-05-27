@@ -12,6 +12,9 @@
 #ifdef VL53L_MZ_USE_VL53L5CX
 #include "vl53l5cx_api_wrapper.h"
 #endif
+#ifdef VL53L_MZ_USE_VL53L7CX
+#include "vl53l7cx_api_wrapper.h"
+#endif
 #ifdef VL53L_MZ_USE_VL53L8CX
 #include "vl53l8cx_api_wrapper.h"
 #endif
@@ -103,6 +106,15 @@ class VL53L5CX : public VL53LMZ {
  public:
   VL53L5CX() {
     api_ = new VL53L5CXApiWrapper(this);
+  }
+};
+#endif
+
+#ifdef VL53L_MZ_USE_VL53L7CX
+class VL53L7CX : public VL53LMZ {
+public:
+  VL53L7CX() {
+    api_ = new VL53L7CXApiWrapper(this);
   }
 };
 #endif

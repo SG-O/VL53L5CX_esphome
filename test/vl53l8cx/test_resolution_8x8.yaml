@@ -1,0 +1,32 @@
+esphome:
+  name: vl53l_mz_test_8x8
+  friendly_name: VL53L_MZ_Test_8x8
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+logger:
+
+i2c:
+  - sda: GPIO6
+    scl: GPIO7
+
+vl53l_mz:
+  model: VL53L8CX
+  address: 0x29
+  resolution: 8X8
+  ranging_frequency: 15Hz
+  ranging_mode: CONTINUOUS
+  target_order: STRONGEST
+  continuous_update: true
+
+sensor:
+  - platform: vl53l_mz
+    name: distance

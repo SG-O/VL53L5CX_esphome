@@ -1,0 +1,82 @@
+esphome:
+  name: vl53l_mz_test_mixed
+  friendly_name: VL53L_MZ_Test_Mixed
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: ../components
+
+logger:
+
+i2c:
+  - id: bus_a
+    sda: GPIO6
+    scl: GPIO7
+
+vl53l_mz:
+  - id: sensor_01
+    model: VL53L5CX
+    address: 0x29
+    i2c_id: bus_a
+    lp_pin: GPIO1
+    resolution: 4X4
+    ranging_frequency: 30Hz
+    ranging_mode: CONTINUOUS
+    continuous_update: true
+    xtalk_calibration_data: "n9gAwAMgCWALCAgXCAgIA5/kAUAAAAAAAAAAAAAAAAAB4AAgAAAAIJ/4AEAXFxcXn/wEBAAARqQAADdmAAAmYAAAHLwAABdzAAARJQAAEQcAAA5jAACLTAAAYKIAAD3AAAAmqgAAG8IAABgEAAAUlwAAEO0AASgbAACT8AAAV2EAADArAAAgqgAAGrYAABXDAAAWDgABf7sAAK1YAABxrwAANtkAACL7AAAclgAAGIMAABeWAAGQAAAAl9YAAGY7AAAzCgAAIM0AABk4AAAWpQAAFLsAAK/PAABlfQAAPZMAACnRAAAZTgAAFboAABHGAAASfwAAcx0AAEIsAAAuggAAHoAAABgcAAATLQAAD8YAAA+FAABPBAAAM+kAAB8GAAAYQAAAEywAABKXAAAOAQAADayg/AEAAAAAAAAAAAMAAAAAAAAAAKEMAQAAAACAAAAAAwAAAAAAAAAAoRwAwAAAcOsMgAHgAAAAJqEoCQIAAAAAAAAAAAAAAAAAAQAAADYAAwHZAUMCMwIXAksCQQEXAiIAJwBdAAUAEQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACiSABAAAAAAKJMAIEAAAAAAAAAAKJUAIEAAAAAAAAAAKJcAIEAAAAAAAAAAKJkAIEAAAAAAAAAAKJsAIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKKMAIIAAAAAAAAAAAAAAAAAAAAAAAAADwABAwQ="
+
+  - id: sensor_02
+    model: VL53L7CX
+    address: 0x2A
+    i2c_id: bus_a
+    lp_pin: GPIO2
+    resolution: 4X4
+    ranging_frequency: 30Hz
+    ranging_mode: CONTINUOUS
+    continuous_update: true
+    run_xtalk_calibration: true
+
+  - id: sensor_03
+    model: VL53L8CX
+    address: 0x2B
+    i2c_id: bus_a
+    lp_pin: GPIO3
+    resolution: 4X4
+    ranging_frequency: 30Hz
+    ranging_mode: CONTINUOUS
+    continuous_update: true
+    run_xtalk_calibration: true
+
+sensor:
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_01
+    name: sensor01_distance
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_02
+    name: sensor02_distance
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_03
+    name: sensor03_distance
+
+text_sensor:
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_01
+    name: sensor01_csv
+    output_formatting: CSV
+    output_data: FLOAT_DISTANCE
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_02
+    name: sensor02_csv
+    output_formatting: CSV
+    output_data: FLOAT_DISTANCE
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_03
+    name: sensor03_csv
+    output_formatting: CSV
+    output_data: FLOAT_DISTANCE

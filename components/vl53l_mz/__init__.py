@@ -27,6 +27,7 @@ CONF_VL53LMZ_ID = "vl53l_mz_id"
 
 MODELS = {
     "VL53L5CX": vl53l_mz_ns.class_("VL53L5CX", VL53LMZ),
+    "VL53L7CX": vl53l_mz_ns.class_("VL53L7CX", VL53LMZ),
     "VL53L8CX": vl53l_mz_ns.class_("VL53L8CX", VL53LMZ),
 }
 
@@ -154,7 +155,10 @@ CONFIG_SCHEMA = cv.All(
 async def to_code(config):
     if config[CONF_MODEL] == "VL53L5CX":
         cg.add_define("VL53L_MZ_USE_VL53L5CX")
-        cg.add_library("VL53L5CX_ULD_API", "2.0.1", "https://github.com/SG-O/VL53L5CX_ULD_API.git")
+        cg.add_library("VL53L5CX_ULD_API", "2.0.0", "https://github.com/SG-O/VL53L5CX_ULD_API.git")
+    if config[CONF_MODEL] == "VL53L7CX":
+        cg.add_define("VL53L_MZ_USE_VL53L7CX")
+        cg.add_library("VL53L7CX_ULD_API", "2.0.0", "https://github.com/SG-O/VL53L7CX_ULD_API.git")
     if config[CONF_MODEL] == "VL53L8CX":
         cg.add_define("VL53L_MZ_USE_VL53L8CX")
         cg.add_library("VL53L8CX_ULD_API", "2.0.0", "https://github.com/SG-O/VL53L8CX_ULD_API.git")

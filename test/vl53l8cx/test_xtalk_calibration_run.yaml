@@ -1,0 +1,33 @@
+esphome:
+  name: vl53l_mz_test_xtalk_run
+  friendly_name: VL53L_MZ_Test_Xtalk_Run
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+logger:
+
+i2c:
+  - sda: GPIO6
+    scl: GPIO7
+
+vl53l_mz:
+  model: VL53L8CX
+  address: 0x29
+  resolution: 8X8
+  ranging_frequency: 1Hz
+  ranging_mode: AUTO
+  run_xtalk_calibration: true
+  xtalk_calibration_reflectance: 50%
+  xtalk_calibration_distance: 1000mm
+
+sensor:
+  - platform: vl53l_mz
+    name: distance

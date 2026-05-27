@@ -2,7 +2,7 @@
 
 source ../.venv/bin/activate
 
-mapfile -t yaml_files < <(find . -name "*.yaml" | sort)
+mapfile -t yaml_files < <(find . -not -path '*/.esphome/*' -name "*.yaml" | sort)
 
 for file in "${yaml_files[@]}"; do
     echo "Testing configuration $file..."

@@ -35,6 +35,17 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(VL53L5CX_ULD_API)
 
 FetchContent_Declare(
+        "VL53L7CX_ULD_API"
+        GIT_REPOSITORY "https://github.com/SG-O/VL53L7CX_ULD_API.git"
+        SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.libraries/VL53L7CX_ULD_API"
+        GIT_TAG "origin/master"
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
+)
+FetchContent_MakeAvailable(VL53L7CX_ULD_API)
+
+FetchContent_Declare(
         "VL53L8CX_ULD_API"
         GIT_REPOSITORY "https://github.com/SG-O/VL53L8CX_ULD_API.git"
         SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.libraries/VL53L8CX_ULD_API"
