@@ -1,6 +1,9 @@
 /.esphome/
 /secrets.yaml
 
+.libraries/
+config/
+
 __pycache__/
 *.py[cod]
 *$py.class

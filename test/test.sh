@@ -2,7 +2,9 @@
 
 source ../.venv/bin/activate
 
-for file in *.yaml; do
+mapfile -t yaml_files < <(find . -name "*.yaml" | sort)
+
+for file in "${yaml_files[@]}"; do
     echo "Testing configuration $file..."
     if ! esphome config "$file"; then
         echo "ERROR: Configuration test failed for $file"
@@ -10,11 +12,11 @@ for file in *.yaml; do
     fi
 done
 
-for file in *.yaml; do
+for file in "${yaml_files[@]}"; do
     esphome clean "$file"
 done
 
-for file in *.yaml; do
+for file in "${yaml_files[@]}"; do
     echo "Compiling $file..."
     if ! esphome compile "$file"; then
         echo "ERROR: Compilation failed for $file"

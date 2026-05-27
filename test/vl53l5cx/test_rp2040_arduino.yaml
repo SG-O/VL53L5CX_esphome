@@ -1,0 +1,29 @@
+esphome:
+  name: vl53l_mz_test_rp2040
+  friendly_name: VL53L_MZ_Test_RP2040
+
+rp2040:
+  board: rpipicow
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+
+logger:
+
+i2c:
+  - sda: GPIO4
+    scl: GPIO5
+
+vl53l_mz:
+  model: VL53L5CX
+  address: 0x29
+
+sensor:
+  - platform: vl53l_mz
+    name: single_distance
+
+text_sensor:
+  - platform: vl53l_mz
+    name: float_distance

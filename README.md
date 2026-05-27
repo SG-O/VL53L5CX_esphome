@@ -1,14 +1,12 @@
-# VL53L5CX ESPHome Component
+# VL53L_MZ ESPHome Component
 
-Custom ESPHome component for the [STMicroelectronics VL53L5CX](https://www.st.com/resource/en/datasheet/vl53l5cx.pdf)
-multizone Time-of-Flight (ToF) ranging sensor.
+Custom ESPHome component for STMicroelectronics multizone Time-of-Flight (ToF) ranging sensors.
 
-The VL53L5CX is a state-of-the-art ToF multizone ranging sensor. It provides multizone distance measurements up to **8×8
-zones** with a **45°x45° (65° diagonal) field of view**, measuring distances up to **4 meters** at a maximum frequency of 
-**60 Hz** (4×4) or **15 Hz** (8×8).
+Supports the VL53L5CX and VL53L8CX.
 
 > **⚠️ Disclaimer:** This software is **experimental**. It has only been tested on the **ESP32-C6** using the **ESP-IDF**
 > framework. The following features are **untested**:
+> - VL53L8CX support
 > - Multiple sensors on the same I²C bus
 > - Crosstalk (Xtalk) calibration (both running calibration and applying pre-calibrated data)
 
@@ -18,7 +16,7 @@ zones** with a **45°x45° (65° diagonal) field of view**, measuring distances 
 - **Two ranging modes**: Continuous (high performance) and Autonomous (low power)
 - **Configurable integration time**, sharpening, and target order
 - **Crosstalk (Xtalk) calibration**: Run calibration or apply pre-calibrated data
-- **Multiple sensors**: Support for multiple VL53L5CX devices on the same I²C bus (via LP pin)
+- **Multiple sensors**: Support for multiple ToF sensors on the same I²C bus (via LP pin)
 - **Numeric sensors**: Per-zone distance, sigma, reflectance, and target count with aggregation modes (average, nearest,
   farthest, center)
 - **Text sensors**: CSV, table, binary, and PNG output of all zone data with axis flipping support
@@ -31,7 +29,7 @@ zones** with a **45°x45° (65° diagonal) field of view**, measuring distances 
 ## Installation
 
 Add this component to your ESPHome project using an external component source. For a local installation, place the
-`components/vl53l5cx/` next to your config file and reference it:
+`components/vl53l_mz/` next to your config file and reference it:
 
 ```yaml
 external_components:
@@ -55,13 +53,14 @@ A complete working example configuration is available in [`example.yaml`](exampl
 
 ## Configuration
 
-### VL53L5CX Hub (`vl53l5cx`)
+### VL53L MZ Hub (`vl53l_mz`)
 
-The main component configures the VL53L5CX sensor hardware and ranging parameters.
+The main component configures the sensor hardware and ranging parameters.
 
 ```yaml
-vl53l5cx:
+vl53l_mz:
   id: sensor_01
+  model: VL53L5CX
   address: 0x29
   i2c_id: bus_a
   reset_pin: GPIO2
@@ -82,6 +81,7 @@ vl53l5cx:
 | Key                                 | Type       | Default     | Description                                                                                                                                                                                                                                              |
 |-------------------------------------|------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **`id`**                            | ID         | -           | Unique ID for this sensor hub.                                                                                                                                                                                                                           |
+| **`model`**                         | enum       | -           | **Required.** Sensor model: `VL53L5CX` or `VL53L8CX`.                                                                                                                                                                                                   |
 | **`address`**                       | int        | `0x29`      | I²C address (7-bit). Default is `0x29`. If changed, `lp_pin` must be defined.                                                                                                                                                                            |
 | **`i2c_id`**                        | ID         | -           | ID of the I²C bus component.                                                                                                                                                                                                                             |
 | **`reset_pin`**                     | GPIO pin   | -           | Reset output pin (active high). Used to reset the sensor's I²C buffer. Does not reset the sensor itself. Usually not needed.                                                                                                                             |
@@ -105,12 +105,12 @@ vl53l5cx:
 
 ### Numeric Sensor (`sensor`)
 
-Creates numeric sensors that publish individual zone values or aggregated values from the VL53L5CX zones.
+Creates numeric sensors that publish individual zone values or aggregated values from the sensor zones.
 
 ```yaml
 sensor:
-  - platform: vl53l5cx
-    vl53l5cx_id: sensor_01
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_01
     name: "Single Zone Distance"
     zone_mode: SINGLE
     zone_data: DISTANCE
@@ -121,7 +121,7 @@ sensor:
 
 | Key                 | Type | Default    | Description                                                  |
 |---------------------|------|------------|--------------------------------------------------------------|
-| **`vl53l5cx_id`**   | ID   | -          | ID of the parent VL53L5CX hub.                               |
+| **`vl53l_mz_id`**   | ID   | -          | ID of the parent `vl53l_mz` hub.                             |
 | **`zone_mode`**     | enum | `SINGLE`   | How to aggregate zone data. See **Zone Modes** below.        |
 | **`zone_data`**     | enum | `DISTANCE` | Which data to report. See **Zone Data** below.               |
 | **`selected_zone`** | int  | `0`        | Zone index to use when `zone_mode` is `SINGLE`. Range: 0–63. |
@@ -151,8 +151,8 @@ Creates text sensors that output all zone data in various formats, useful for vi
 
 ```yaml
 text_sensor:
-  - platform: vl53l5cx
-    vl53l5cx_id: sensor_01
+  - platform: vl53l_mz
+    vl53l_mz_id: sensor_01
     name: "Distance CSV"
     output_formatting: CSV
     output_data: FLOAT_DISTANCE
@@ -164,7 +164,7 @@ text_sensor:
 
 | Key                     | Type | Default          | Description                                      |
 |-------------------------|------|------------------|--------------------------------------------------|
-| **`vl53l5cx_id`**       | ID   | -                | ID of the parent VL53L5CX hub.                   |
+| **`vl53l_mz_id`**       | ID   | -                | ID of the parent `vl53l_mz` hub.                 |
 | **`output_formatting`** | enum | `CSV`            | Output format. See **Output Formats** below.     |
 | **`output_data`**       | enum | `FLOAT_DISTANCE` | Which data to output. See **Output Data** below. |
 | **`flip_x`**            | bool | `false`          | Flip the output horizontally.                    |
@@ -204,14 +204,14 @@ text_sensor:
 
 ## Multiple Sensors
 
-The VL53L5CX supports multiple sensors on the same I²C bus. Since all VL53L5CX sensors share the default I²C address
-`0x29`, you must connect the LP pin to a free output of your MCU and specify the `lp_pin` option.
+This component supports multiple sensors on the same I²C bus. Since sensors of the same type share the same default I²C address,
+you must connect the LP pin to a free output of your MCU and specify the `lp_pin` option.
 
 The component handles the address programming sequence automatically: it first sets all LP pins low, then
 brings them high one by one to bring each sensor online, and program the new address.
 
 ```yaml
-vl53l5cx:
+vl53l_mz:
   - id: sensor_01
     address: 0x29
     i2c_id: bus_a
@@ -226,12 +226,12 @@ vl53l5cx:
     ranging_frequency: 30Hz
 ```
 
-> **Important:** When using multiple VL53L5CXs, every one (including the one at address `0x29`) must define a
+> **Important:** When using multiple sensors, every one (including the one at the default address) must define a
 `lp_pin`.
 
 ## Zone Layout
 
-The VL53L5CX divides its field of view into zones. Zone indices are numbered row by row, starting from the
+The sensor divides its field of view into zones. Zone indices are numbered row by row, starting from the
 top-left from the sensor's perspective:
 
 ### 4×4 Resolution (16 zones)
@@ -263,4 +263,4 @@ top-left from the sensor's perspective:
 This component is licensed under the BSD 3-Clause License. See [LICENSE](LICENSE) for details.
 
 The uncompng library created by the Wuffs Authors that is included in this component is provided under its own license.
-See [uncompng.c](components/vl53l5cx/text_sensor/uncompng.c) for details.
+See [uncompng.c](components/vl53l_mz/text_sensor/uncompng.c) for details.
